@@ -51,7 +51,7 @@ HOMEWORK_STATUSES = {
 
 
 def send_message(bot, message):
-    """Бот отправляет сообщение"""
+    """Бот отправляет сообщение."""
     try:
         bot.send_message(chat_id=TELEGRAM_CHAT_ID, text=message)
         logger.info('Сообщение отправлено в Телеграмм')
@@ -60,8 +60,7 @@ def send_message(bot, message):
 
 
 def get_api_answer(current_timestamp):
-    """Делаем запрос к API"""
-
+    """Делаем запрос к API."""
     timestamp = current_timestamp or int(time.time())
     params = {'from_date': timestamp}
     try:
@@ -83,7 +82,7 @@ def get_api_answer(current_timestamp):
 
 
 def check_response(response):
-    """Проверяем в каком формате пришли данные"""
+    """Проверяем в каком формате пришли данные."""
     if type(response) != dict:
         message = 'Ответ не в формате Python'
         # send_error(TypeError, message=message)
@@ -107,6 +106,7 @@ def check_response(response):
 
 
 def parse_status(homework):
+    """Проверяем наличие изменений в статусе домашней работы."""
     homework_name = homework.get('homework_name')
     homework_status = homework.get('status')
 
@@ -124,7 +124,7 @@ def parse_status(homework):
 
 
 def check_tokens():
-    """Проверяем есть ли все нужные ключи для работы бота"""
+    """Проверяем есть ли все нужные ключи для работы бота."""
     if PRACTICUM_TOKEN is None:
         logger.critical('Нет переменной PRACTICUM_TOKEN')
         return False
@@ -149,7 +149,6 @@ def check_tokens():
 
 def main():
     """Основная логика работы бота."""
-
     if not check_tokens():
         """Если нет обязательного эллеманта бот принудительно выключается"""
         raise SystemExit
