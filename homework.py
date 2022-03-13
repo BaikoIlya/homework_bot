@@ -3,12 +3,13 @@ import sys
 import time
 import logging
 from http import HTTPStatus
-from requests import RequestException
+
 import requests
-import telegram
+from telegram import Bot
 from telegram.ext import Updater
 from dotenv import load_dotenv
-from exceptions import WrongType, WrongKey
+
+from exceptions import WrongType, WrongKey, WrongStatusCode, ApiException
 
 load_dotenv()
 
@@ -53,13 +54,12 @@ def get_api_answer(current_timestamp):
             params=params
         )
         if homework_status.status_code != HTTPStatus.OK:
-            message = 'Не доступен эндпоинт'
-            logging.error(message)
-            raise Exception(message)
+            logging.error(WrongStatusCode(homework_status.status_code))
+            raise WrongStatusCode(homework_status.status_code)
         return homework_status.json()
-    except RequestException:
-        message = 'Ошибка при запросе к основному API'
-        logging.error(message)
+    except requests.RequestException:
+        logging.error(ApiException)
+        raise ApiException
 
 
 def check_response(response):
@@ -102,26 +102,24 @@ def parse_status(homework):
 
 def check_tokens():
     """Проверяем есть ли все нужные ключи для работы бота."""
-    if not all([PRACTICUM_TOKEN, TELEGRAM_TOKEN, TELEGRAM_CHAT_ID]):
-        logging.critical('Нет переменной PRACTICUM_TOKEN')
-        return False
-    else:
-        return True
+    return all([PRACTICUM_TOKEN, TELEGRAM_TOKEN, TELEGRAM_CHAT_ID])
 
 
 def main():
     """Основная логика работы бота."""
     if not check_tokens():
         """Если нет обязательного эллеманта бот принудительно выключается"""
+        logging.critical('Отсутсвует обязательный эллемент')
         raise SystemExit
 
-    bot = telegram.Bot(token=TELEGRAM_TOKEN)
+    bot = Bot(token=TELEGRAM_TOKEN)
     current_timestamp = int(time.time())
 
     updater = Updater(token=TELEGRAM_TOKEN)
     updater.start_polling()
     last_error = Exception
     last_status = []
+    last_work = {}
 
     while True:
         try:
@@ -129,12 +127,20 @@ def main():
             current_status = check_response(response)
             if last_status != current_status:
                 for homework in current_status:
-                    message = parse_status(homework)
-                    send_message(bot, message)
+                    if homework['homework_name'] in last_work:
+                        if homework['status'] != last_work['homework_name']:
+                            message = parse_status(homework)
+                            send_message(bot, message)
+                            last_work['homework_name'] = homework['status']
+                    else:
+                        message = parse_status(homework)
+                        send_message(bot, message)
+                        last_work['name'] = homework['status']
                 last_status = current_status
             else:
                 logging.info('Отсутствуют новые статусы')
             current_timestamp = int(time.time())
+            last_error = Exception
 
         except Exception as error:
             """Ошибка отправляется в телеграмм только в первый раз"""

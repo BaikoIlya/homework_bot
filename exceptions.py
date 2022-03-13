@@ -22,3 +22,25 @@ class WrongKey(KeyError):
             f'нет в словаре {self.cur_dict}'
         )
         super().__init__(message)
+
+
+class WrongStatusCode(Exception):
+    """Исключение возникает при статус коде не 200"""
+
+    def __init__(self, status_code):
+        self.status_code = status_code
+        message = (
+            f'При попытке подключения к API произошёл сбой, '
+            f'статус запроса {self.status_code}'
+        )
+        super().__init__(message)
+
+
+class ApiException(Exception):
+    """Проброс ошибки RequestExeption"""
+
+    def __init__(self):
+        message = (
+            'Ошибка при запросе к основному API'
+        )
+        super().__init__(message)
