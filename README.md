@@ -37,8 +37,18 @@ python3 -m pip install --upgrade pip
 ```
 pip install -r requirements.txt
 ```
-Выполнить файл с кодом:
+Открыть файл с кодом:
 
 ```
-python3 homework.py
+homework.py
 ```
+
+Внести собственные значения ключей:
+
+```
+PRACTICUM_TOKEN = os.getenv('PRACTICUM_TOKEN')
+TELEGRAM_TOKEN = os.getenv('TELEGRAM_TOKEN')
+TELEGRAM_CHAT_ID = os.getenv('TELEGRAM_CHAT_ID')
+```
+
+Запустить этот файл.
